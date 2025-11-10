@@ -1,0 +1,21 @@
+{
+  "name": "food-restaurant-system",
+  "version": "1.0.0",
+  "description": "餐饮系统网站 - Supabase + Netlify",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.7",
+    "vue": "^3.4.15",
+    "vue-router": "^4.2.5",
+    "pinia": "^2.1.7"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.0.3",
+    "vite": "^5.0.8"
+  }
+}

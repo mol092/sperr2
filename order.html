@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>点餐系统 - 美食餐厅</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #ff6b6b, #ff8e53);
+            color: white;
+            padding: 1rem 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
+        
+        .back-btn {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        
+        .back-btn:hover {
+            background-color: rgba(255,255,255,0.2);
+        }
+        
+        .order-container {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+        
+        .restaurant-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .dish-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+        
+        .dish-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 1.5rem;
+            border: 2px solid transparent;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .dish-card:hover {
+            border-color: #ff6b6b;
+            transform: translateY(-2px);
+        }
+        
+        .dish-card.selected {
+            border-color: #ff6b6b;
+            background: #fff5f5;
+        }
+        
+        .dish-info h3 {
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+        
+        .dish-info p {
+            color: #666;
+            margin-bottom: 1rem;
+        }
+        
+        .price {
+            font-weight: bold;
+            color: #ff6b6b;
+            font-size: 1.2rem;
+        }
+        
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .quantity-btn {
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .quantity {
+            font-weight: bold;
+            min-width: 30px;
+            text-align: center;
+        }
+        
+        .order-summary {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 2rem;
+        }
+        
+        .order-items {
+            margin: 1rem 0;
+        }
+        
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .total {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #ff6b6b;
+            margin: 1rem 0;
+            text-align: center;
+        }
+        
+        .btn {
+            background: #ff6b6b;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: all 0.3s;
+            width: 100%;
+            margin-top: 1rem;
+        }
+        
+        .btn:hover {
+            background: #ff5252;
+            transform: translateY(-2px);
+        }
+        
+        .customer-info {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin-top: 2rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+        
+        @media (max-width: 768px) {
+            .order-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .dish-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <nav class="nav">
+                <div class="logo">
+                    <i class="fas fa-utensils"></i> 在线点餐
+                </div>
+                <a href="index.html" class="back-btn">
+                    <i class="fas fa-arrow-left"></i> 返回首页
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="order-container">
+            <div class="order-content">
+                <div class="restaurant-section">
+                    <h2>选择餐厅</h2>
+                    <select id="restaurantSelect" style="width: 100%; padding: 10px; margin: 1rem 0; border: 1px solid #ddd; border-radius: 5px;">
+                        <option value="">请选择餐厅</option>
+                        <option value="1">东方美食</option>
+                        <option value="2">西式餐厅</option>
+                        <option value="3">日料专门店</option>
+                    </select>
+                </div>
+
+                <div class="restaurant-section">
+                    <h2>菜单选择</h2>
+                    <div class="dish-grid" id="menuGrid">
+                        <!-- 菜品将通过JavaScript动态加载 -->
+                    </div>
+                </div>
+
+                <div class="customer-info">
+                    <h2>客户信息</h2>
+                    <div class="form-group">
+                        <label for="customerName">姓名</label>
+                        <input type="text" id="customerName" placeholder="请输入您的姓名">
+                    </div>
+                    <div class="form-group">
+                        <label for="customerPhone">电话</label>
+                        <input type="tel" id="customerPhone" placeholder="请输入您的联系电话">
+                    </div>
+                    <div class="form-group">
+                        <label for="customerAddress">配送地址</label>
+                        <input type="text" id="customerAddress" placeholder="请输入配送地址">
+                    </div>
+                </div>
+            </div>
+
+            <div class="order-summary">
+                <h2>订单汇总</h2>
+                <div class="order-items" id="orderItems">
+                    <p style="text-align: center; color: #999;">请先选择菜品</p>
+                </div>
+                <div class="total" id="totalAmount">总计: ¥0</div>
+                <button class="btn" onclick="submitOrder()">确认下单</button>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // 模拟菜品数据
+        const menuData = {
+            '1': [ // 东方美食
+                { id: 1, name: '宫保鸡丁', description: '经典川菜，麻辣鲜香', price: 48 },
+                { id: 2, name: '麻婆豆腐', description: '麻辣软嫩，下饭神器', price: 38 },
+                { id: 3, name: '红烧肉', description: '肥而不腻，入口即化', price: 58 },
+                { id: 4, name: '糖醋里脊', description: '酸甜可口，外酥里嫩', price: 42 }
+            ],
+            '2': [ // 西式餐厅
+                { id: 5, name: '牛排', description: '精选牛排，七分熟最佳', price: 128 },
+                { id: 6, name: '意大利面', description: '正宗意面，番茄肉酱', price: 48 },
+                { id: 7, name: '沙拉', description: '新鲜蔬菜，健康美味', price: 35 },
+                { id: 8, name: '奶油蘑菇汤', description: '香浓顺滑，经典西式汤品', price: 28 }
+            ],
+            '3': [ // 日料专门店
+                { id: 9, name: '寿司拼盘', description: '多种寿司，新鲜制作', price: 88 },
+                { id: 10, name: '刺身', description: '新鲜生鱼片，原汁原味', price: 98 },
+                { id: 11, name: '天妇罗', description: '日式炸物，酥脆可口', price: 45 },
+                { id: 12, name: '味增汤', description: '传统日式汤品', price: 18 }
+            ]
+        };
+
+        let selectedDishes = {};
+
+        // 餐厅选择事件
+        document.getElementById('restaurantSelect').addEventListener('change', function() {
+            const restaurantId = this.value;
+            loadMenu(restaurantId);
+        });
+
+        // 加载菜单
+        function loadMenu(restaurantId) {
+            const menuGrid = document.getElementById('menuGrid');
+            menuGrid.innerHTML = '';
+            selectedDishes = {};
+            updateOrderSummary();
+
+            if (restaurantId && menuData[restaurantId]) {
+                menuData[restaurantId].forEach(dish => {
+                    const dishCard = document.createElement('div');
+                    dishCard.className = 'dish-card';
+                    dishCard.innerHTML = `
+                        <div class="dish-info">
+                            <h3>${dish.name}</h3>
+                            <p>${dish.description}</p>
+                            <p class="price">¥${dish.price}</p>
+                            <div class="quantity-controls">
+                                <button class="quantity-btn" onclick="decreaseQuantity(${dish.id})">-</button>
+                                <span class="quantity" id="quantity-${dish.id}">0</span>
+                                <button class="quantity-btn" onclick="increaseQuantity(${dish.id})">+</button>
+                            </div>
+                        </div>
+                    `;
+                    menuGrid.appendChild(dishCard);
+                });
+            }
+        }
+
+        // 增加数量
+        function increaseQuantity(dishId) {
+            if (!selectedDishes[dishId]) {
+                selectedDishes[dishId] = { quantity: 0, dish: findDishById(dishId) };
+            }
+            selectedDishes[dishId].quantity++;
+            updateQuantityDisplay(dishId);
+            updateOrderSummary();
+        }
+
+        // 减少数量
+        function decreaseQuantity(dishId) {
+            if (selectedDishes[dishId] && selectedDishes[dishId].quantity > 0) {
+                selectedDishes[dishId].quantity--;
+                if (selectedDishes[dishId].quantity === 0) {
+                    delete selectedDishes[dishId];
+                }
+                updateQuantityDisplay(dishId);
+                updateOrderSummary();
+            }
+        }
+
+        // 更新数量显示
+        function updateQuantityDisplay(dishId) {
+            const quantityElement = document.getElementById(`quantity-${dishId}`);
+            if (quantityElement) {
+                quantityElement.textContent = selectedDishes[dishId] ? selectedDishes[dishId].quantity : 0;
+            }
+        }
+
+        // 根据ID查找菜品
+        function findDishById(dishId) {
+            for (const restaurantId in menuData) {
+                const dish = menuData[restaurantId].find(d => d.id === dishId);
+                if (dish) return dish;
+            }
+            return null;
+        }
+
+        // 更新订单汇总
+        function updateOrderSummary() {
+            const orderItems = document.getElementById('orderItems');
+            const totalAmount = document.getElementById('totalAmount');
+            
+            let total = 0;
+            let itemsHTML = '';
+            
+            Object.keys(selectedDishes).forEach(dishId => {
+                const item = selectedDishes[dishId];
+                const subtotal = item.dish.price * item.quantity;
+                total += subtotal;
+                
+                itemsHTML += `
+                    <div class="order-item">
+                        <span>${item.dish.name} × ${item.quantity}</span>
+                        <span>¥${subtotal}</span>
+                    </div>
+                `;
+            });
+            
+            orderItems.innerHTML = itemsHTML || '<p style="text-align: center; color: #999;">请先选择菜品</p>';
+            totalAmount.textContent = `总计: ¥${total}`;
+        }
+
+        // 提交订单
+        function submitOrder() {
+            const customerName = document.getElementById('customerName').value;
+            const customerPhone = document.getElementById('customerPhone').value;
+            const restaurantSelect = document.getElementById('restaurantSelect');
+            
+            if (!restaurantSelect.value) {
+                alert('请选择餐厅');
+                return;
+            }
+            
+            if (Object.keys(selectedDishes).length === 0) {
+                alert('请选择至少一个菜品');
+                return;
+            }
+            
+            if (!customerName || !customerPhone) {
+                alert('请填写客户信息');
+                return;
+            }
+            
+            // 这里可以添加实际的订单提交逻辑
+            alert('订单提交成功！我们将尽快为您处理。');
+            
+            // 清空表单
+            document.getElementById('customerName').value = '';
+            document.getElementById('customerPhone').value = '';
+            document.getElementById('customerAddress').value = '';
+            restaurantSelect.value = '';
+            selectedDishes = {};
+            loadMenu('');
+        }
+    </script>
+</body>
+</html>
