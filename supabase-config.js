@@ -1,162 +1,51 @@
-// 快点点餐厅自助点餐系统 - Supabase配置和服务类
+// 快点点餐厅自助点餐系统 - 纯前端模拟数据服务类
 class KuaidiandianService {
     constructor() {
-        // Supabase客户端配置
-        this.supabaseUrl = 'https://cghbobwnejjtzrduwety.supabase.co';
-        this.supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNnaGJvYnduZWpqdHpyZHV3ZXR5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI0OTc1NzMsImV4cCI6MjA3ODA3MzU3M30.M8FyiW9mF1xaZoem75r6vBmVmtVMTnkLwfX1UPOw05Q';
+        // 模拟数据 - 菜品分类
+        this.categories = [
+            { id: 1, name: '热菜', sort: 1 },
+            { id: 2, name: '凉菜', sort: 2 },
+            { id: 3, name: '汤品', sort: 3 },
+            { id: 4, name: '主食', sort: 4 },
+            { id: 5, name: '饮品', sort: 5 }
+        ];
         
-        // 初始化Supabase客户端
-        this.supabase = window.supabase.createClient(this.supabaseUrl, this.supabaseKey);
+        // 模拟数据 - 菜品列表
+        this.dishes = [
+            // 热菜
+            { id: '1', name: '宫保鸡丁', category_id: 1, price: 38.00, description: '香辣可口，花生香脆', image_url: 'https://via.placeholder.com/150x150?text=宫保鸡丁' },
+            { id: '2', name: '麻婆豆腐', category_id: 1, price: 28.00, description: '麻辣鲜香，豆腐嫩滑', image_url: 'https://via.placeholder.com/150x150?text=麻婆豆腐' },
+            { id: '3', name: '红烧肉', category_id: 1, price: 48.00, description: '肥而不腻，入口即化', image_url: 'https://via.placeholder.com/150x150?text=红烧肉' },
+            
+            // 凉菜
+            { id: '4', name: '拍黄瓜', category_id: 2, price: 12.00, description: '清爽开胃', image_url: 'https://via.placeholder.com/150x150?text=拍黄瓜' },
+            { id: '5', name: '凉拌海带丝', category_id: 2, price: 15.00, description: '酸甜可口', image_url: 'https://via.placeholder.com/150x150?text=海带丝' },
+            
+            // 汤品
+            { id: '6', name: '西红柿鸡蛋汤', category_id: 3, price: 18.00, description: '家常美味', image_url: 'https://via.placeholder.com/150x150?text=西红柿汤' },
+            { id: '7', name: '酸辣汤', category_id: 3, price: 22.00, description: '酸辣开胃', image_url: 'https://via.placeholder.com/150x150?text=酸辣汤' },
+            
+            // 主食
+            { id: '8', name: '扬州炒饭', category_id: 4, price: 25.00, description: '米饭粒粒分明', image_url: 'https://via.placeholder.com/150x150?text=扬州炒饭' },
+            { id: '9', name: '牛肉面', category_id: 4, price: 32.00, description: '汤鲜味美', image_url: 'https://via.placeholder.com/150x150?text=牛肉面' },
+            
+            // 饮品
+            { id: '10', name: '可乐', category_id: 5, price: 8.00, description: '冰镇可乐', image_url: 'https://via.placeholder.com/150x150?text=可乐' },
+            { id: '11', name: '橙汁', category_id: 5, price: 12.00, description: '鲜榨橙汁', image_url: 'https://via.placeholder.com/150x150?text=橙汁' },
+            { id: '12', name: '啤酒', category_id: 5, price: 15.00, description: '青岛啤酒', image_url: 'https://via.placeholder.com/150x150?text=啤酒' }
+        ];
         
-        // 当前用户信息
-        this.currentUser = null;
+        // 当前用户信息（匿名用户）
+        this.currentUser = { id: 'anonymous-user', email: 'guest@example.com' };
         
         // 购物车数据
         this.cart = this.loadCartFromStorage();
+        
+        // 订单历史
+        this.orderHistory = [];
     }
     
-    // 用户认证相关方法
-    async signIn(email, password) {
-        try {
-            const { data, error } = await this.supabase.auth.signInWithPassword({
-                email: email,
-                password: password
-            });
-            
-            if (error) throw error;
-            
-            this.currentUser = data.user;
-            await this.createUserProfileIfNotExists(data.user.id);
-            
-            return { success: true, user: data.user };
-        } catch (error) {
-            console.error('登录失败:', error);
-            return { success: false, error: error.message };
-        }
-    }
-    
-    async signUp(email, password, username = '', phone = '') {
-        try {
-            const { data, error } = await this.supabase.auth.signUp({
-                email: email,
-                password: password,
-                options: {
-                    data: {
-                        username: username,
-                        phone: phone
-                    }
-                }
-            });
-            
-            if (error) throw error;
-            
-            return { success: true, user: data.user };
-        } catch (error) {
-            console.error('注册失败:', error);
-            return { success: false, error: error.message };
-        }
-    }
-    
-    async signOut() {
-        try {
-            const { error } = await this.supabase.auth.signOut();
-            if (error) throw error;
-            
-            this.currentUser = null;
-            this.clearCart();
-            
-            return { success: true };
-        } catch (error) {
-            console.error('退出登录失败:', error);
-            return { success: false, error: error.message };
-        }
-    }
-    
-    async getCurrentUser() {
-        try {
-            const { data: { user } } = await this.supabase.auth.getUser();
-            this.currentUser = user;
-            return user;
-        } catch (error) {
-            console.error('获取当前用户失败:', error);
-            return null;
-        }
-    }
-    
-    async createUserProfileIfNotExists(userId) {
-        try {
-            const { data: existingProfile } = await this.supabase
-                .from('profiles')
-                .select('id')
-                .eq('id', userId)
-                .single();
-            
-            if (!existingProfile) {
-                const { error } = await this.supabase
-                    .from('profiles')
-                    .insert([{ id: userId }]);
-                
-                if (error) throw error;
-            }
-        } catch (error) {
-            console.error('创建用户资料失败:', error);
-        }
-    }
-    
-    // 菜单相关方法
-    async getCategories() {
-        try {
-            const { data, error } = await this.supabase
-                .from('categories')
-                .select('*')
-                .order('sort', { ascending: true });
-            
-            if (error) throw error;
-            return { success: true, data: data };
-        } catch (error) {
-            console.error('获取分类失败:', error);
-            return { success: false, error: error.message };
-        }
-    }
-    
-    async getDishesByCategory(categoryId = null) {
-        try {
-            let query = this.supabase
-                .from('dishes')
-                .select('*')
-                .eq('status', true);
-            
-            if (categoryId) {
-                query = query.eq('category_id', categoryId);
-            }
-            
-            const { data, error } = await query.order('created_at', { ascending: false });
-            
-            if (error) throw error;
-            return { success: true, data: data };
-        } catch (error) {
-            console.error('获取菜品失败:', error);
-            return { success: false, error: error.message };
-        }
-    }
-    
-    async getDishById(dishId) {
-        try {
-            const { data, error } = await this.supabase
-                .from('dishes')
-                .select('*')
-                .eq('id', dishId)
-                .single();
-            
-            if (error) throw error;
-            return { success: true, data: data };
-        } catch (error) {
-            console.error('获取菜品详情失败:', error);
-            return { success: false, error: error.message };
-        }
-    }
-    
-    // 购物车相关方法
+    // 从本地存储加载购物车
     loadCartFromStorage() {
         try {
             const cartData = localStorage.getItem('kuaidiandian_cart');
@@ -167,6 +56,7 @@ class KuaidiandianService {
         }
     }
     
+    // 保存购物车到本地存储
     saveCartToStorage() {
         try {
             localStorage.setItem('kuaidiandian_cart', JSON.stringify(this.cart));
@@ -175,235 +65,182 @@ class KuaidiandianService {
         }
     }
     
-    addToCart(dish, quantity = 1) {
-        try {
-            const existingItemIndex = this.cart.findIndex(item => item.dish_id === dish.id);
-            
-            if (existingItemIndex > -1) {
-                this.cart[existingItemIndex].quantity += quantity;
-            } else {
-                this.cart.push({
-                    dish_id: dish.id,
-                    name: dish.name,
-                    price: dish.price,
-                    image_url: dish.image_url,
-                    quantity: quantity,
-                    unit_price: dish.price
-                });
-            }
-            
-            this.saveCartToStorage();
-            return { success: true, cart: this.cart };
-        } catch (error) {
-            console.error('添加到购物车失败:', error);
-            return { success: false, error: error.message };
-        }
+    // 获取分类列表
+    async getCategories() {
+        return {
+            success: true,
+            data: this.categories
+        };
     }
     
-    updateCartItem(dishId, quantity) {
-        try {
-            const itemIndex = this.cart.findIndex(item => item.dish_id === dishId);
-            
-            if (itemIndex > -1) {
-                if (quantity <= 0) {
-                    this.cart.splice(itemIndex, 1);
-                } else {
-                    this.cart[itemIndex].quantity = quantity;
-                }
-                
+    // 获取菜品列表
+    async getDishes() {
+        return {
+            success: true,
+            data: this.dishes
+        };
+    }
+    
+    // 添加到购物车
+    addToCart(dish) {
+        const existingItem = this.cart.find(item => item.id === dish.id);
+        
+        if (existingItem) {
+            existingItem.quantity += 1;
+        } else {
+            this.cart.push({
+                id: dish.id,
+                name: dish.name,
+                price: dish.price,
+                image_url: dish.image_url,
+                quantity: 1
+            });
+        }
+        
+        this.saveCartToStorage();
+        return { success: true };
+    }
+    
+    // 从购物车移除
+    removeFromCart(dishId) {
+        this.cart = this.cart.filter(item => item.id !== dishId);
+        this.saveCartToStorage();
+        return { success: true };
+    }
+    
+    // 更新购物车商品数量
+    updateCartQuantity(dishId, quantity) {
+        const item = this.cart.find(item => item.id === dishId);
+        if (item) {
+            if (quantity <= 0) {
+                this.removeFromCart(dishId);
+            } else {
+                item.quantity = quantity;
                 this.saveCartToStorage();
             }
-            
-            return { success: true, cart: this.cart };
-        } catch (error) {
-            console.error('更新购物车失败:', error);
-            return { success: false, error: error.message };
         }
+        return { success: true };
     }
     
-    removeFromCart(dishId) {
-        try {
-            this.cart = this.cart.filter(item => item.dish_id !== dishId);
-            this.saveCartToStorage();
-            return { success: true, cart: this.cart };
-        } catch (error) {
-            console.error('从购物车删除失败:', error);
-            return { success: false, error: error.message };
-        }
+    // 获取购物车商品数量
+    getCartCount() {
+        return this.cart.reduce((total, item) => total + item.quantity, 0);
     }
     
-    clearCart() {
-        try {
-            this.cart = [];
-            localStorage.removeItem('kuaidiandian_cart');
-            return { success: true };
-        } catch (error) {
-            console.error('清空购物车失败:', error);
-            return { success: false, error: error.message };
-        }
-    }
-    
+    // 获取购物车总价
     getCartTotal() {
         return this.cart.reduce((total, item) => total + (item.price * item.quantity), 0);
     }
     
-    getCartItemCount() {
-        return this.cart.reduce((count, item) => count + item.quantity, 0);
+    // 清空购物车
+    clearCart() {
+        this.cart = [];
+        this.saveCartToStorage();
+        return { success: true };
     }
     
-    // 订单相关方法
-    async createOrder(orderData) {
-        try {
-            // 生成订单号
-            const orderNo = 'ORD' + Date.now() + Math.random().toString(36).substr(2, 5);
-            
-            // 计算总金额
-            const totalAmount = this.getCartTotal();
-            
-            // 创建订单主记录
-            const { data: order, error: orderError } = await this.supabase
-                .from('orders')
-                .insert([{
-                    user_id: this.currentUser?.id || null,
-                    order_no: orderNo,
-                    type: orderData.type,
-                    table_no: orderData.tableNo || null,
-                    address: orderData.address || null,
-                    total_amount: totalAmount,
-                    status: 'pending'
-                }])
-                .select()
-                .single();
-            
-            if (orderError) throw orderError;
-            
-            // 创建订单项
-            const orderItems = this.cart.map(item => ({
-                order_id: order.id,
-                dish_id: item.dish_id,
-                quantity: item.quantity,
-                unit_price: item.price
-            }));
-            
-            const { error: itemsError } = await this.supabase
-                .from('order_items')
-                .insert(orderItems);
-            
-            if (itemsError) throw itemsError;
-            
-            // 清空购物车
-            this.clearCart();
-            
-            return { success: true, order: order };
-        } catch (error) {
-            console.error('创建订单失败:', error);
-            return { success: false, error: error.message };
-        }
+    // 提交订单（模拟）
+    async submitOrder(orderData) {
+        // 生成订单号
+        const orderNo = 'ORD' + Date.now().toString();
+        
+        const order = {
+            id: orderNo,
+            order_no: orderNo,
+            type: orderData.type,
+            table_no: orderData.tableNo || '',
+            address: orderData.address || '',
+            total_amount: this.getCartTotal(),
+            status: 'pending',
+            created_at: new Date().toISOString(),
+            items: [...this.cart]
+        };
+        
+        // 保存订单到历史
+        this.orderHistory.push(order);
+        
+        // 清空购物车
+        this.clearCart();
+        
+        return {
+            success: true,
+            data: order
+        };
     }
     
-    async getOrderByNo(orderNo) {
-        try {
-            const { data, error } = await this.supabase
-                .from('orders')
-                .select(`
-                    *,
-                    order_items (
-                        *,
-                        dishes (*)
-                    )
-                `)
-                .eq('order_no', orderNo)
-                .single();
-            
-            if (error) throw error;
-            return { success: true, data: data };
-        } catch (error) {
-            console.error('获取订单失败:', error);
-            return { success: false, error: error.message };
+    // 获取订单详情
+    async getOrderDetails(orderNo) {
+        const order = this.orderHistory.find(order => order.order_no === orderNo);
+        
+        if (!order) {
+            return {
+                success: false,
+                error: '订单不存在'
+            };
         }
+        
+        return {
+            success: true,
+            data: order
+        };
     }
     
-    async updateOrderStatus(orderId, status) {
-        try {
-            const { data, error } = await this.supabase
-                .from('orders')
-                .update({ status: status })
-                .eq('id', orderId)
-                .select()
-                .single();
-            
-            if (error) throw error;
-            return { success: true, data: data };
-        } catch (error) {
-            console.error('更新订单状态失败:', error);
-            return { success: false, error: error.message };
+    // 模拟支付
+    async simulatePayment(orderNo) {
+        const order = this.orderHistory.find(order => order.order_no === orderNo);
+        
+        if (!order) {
+            return {
+                success: false,
+                error: '订单不存在'
+            };
         }
+        
+        // 更新订单状态
+        order.status = 'paid';
+        
+        return {
+            success: true,
+            data: order
+        };
     }
     
-    // 支付相关方法（模拟支付）
-    async processPayment(orderId) {
-        try {
-            // 模拟支付处理
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            
-            // 更新订单状态为已支付
-            const result = await this.updateOrderStatus(orderId, 'paid');
-            
-            if (result.success) {
-                return { success: true, message: '支付成功' };
-            } else {
-                throw new Error('支付状态更新失败');
-            }
-        } catch (error) {
-            console.error('支付处理失败:', error);
-            return { success: false, error: error.message };
-        }
+    // 用户登录（模拟）
+    async signIn(email, password) {
+        // 模拟登录成功
+        this.currentUser = {
+            id: 'user-' + Date.now(),
+            email: email,
+            username: email.split('@')[0]
+        };
+        
+        return {
+            success: true,
+            user: this.currentUser
+        };
+    }
+    
+    // 用户注册（模拟）
+    async signUp(email, password, username = '', phone = '') {
+        this.currentUser = {
+            id: 'user-' + Date.now(),
+            email: email,
+            username: username || email.split('@')[0],
+            phone: phone
+        };
+        
+        return {
+            success: true,
+            user: this.currentUser
+        };
+    }
+    
+    // 用户登出（模拟）
+    async signOut() {
+        this.currentUser = null;
+        return { success: true };
     }
 }
 
-// 创建全局服务实例
+// 导出服务实例
 window.kuaidiandianService = new KuaidiandianService();
-
-// 页面加载完成后初始化用户状态
-document.addEventListener('DOMContentLoaded', async function() {
-    await window.kuaidiandianService.getCurrentUser();
-    updateAuthUI();
-});
-
-// 更新认证状态UI
-function updateAuthUI() {
-    const user = window.kuaidiandianService.currentUser;
-    const authElements = document.querySelectorAll('[data-auth]');
-    
-    authElements.forEach(element => {
-        const authState = element.getAttribute('data-auth');
-        if (authState === 'authenticated') {
-            element.style.display = user ? 'block' : 'none';
-        } else if (authState === 'unauthenticated') {
-            element.style.display = user ? 'none' : 'block';
-        }
-    });
-    
-    // 更新购物车数量
-    updateCartCount();
-}
-
-// 更新购物车数量显示
-function updateCartCount() {
-    const cartCountElements = document.querySelectorAll('.cart-count');
-    const count = window.kuaidiandianService.getCartItemCount();
-    
-    cartCountElements.forEach(element => {
-        element.textContent = count;
-        element.style.display = count > 0 ? 'inline' : 'none';
-    });
-}
-
-// 通用错误处理函数
-function showError(message) {
-    alert('错误: ' + message);
-}
-
-function showSuccess(message) {
-    alert('成功: ' + message);
-}
