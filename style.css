@@ -592,6 +592,97 @@ body {
     }
 }
 
+/* 欢迎页面样式 */
+.welcome-container {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #ff6b35 0%, #ff8a65 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    text-align: center;
+    padding: 20px;
+}
+
+.welcome-header h1 {
+    font-size: 3rem;
+    margin-bottom: 10px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+.subtitle {
+    font-size: 1.2rem;
+    opacity: 0.9;
+    margin-bottom: 40px;
+}
+
+.welcome-main {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 30px;
+    margin: 40px 0;
+    max-width: 800px;
+    width: 100%;
+}
+
+.feature-card {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 30px 20px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: transform 0.3s ease;
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+}
+
+.feature-icon {
+    font-size: 3rem;
+    margin-bottom: 15px;
+}
+
+.feature-card h3 {
+    font-size: 1.3rem;
+    margin-bottom: 10px;
+}
+
+.feature-card p {
+    opacity: 0.8;
+    font-size: 0.9rem;
+}
+
+.welcome-footer {
+    margin-top: 40px;
+}
+
+.start-btn {
+    background: white;
+    color: #ff6b35;
+    padding: 15px 40px;
+    border-radius: 50px;
+    text-decoration: none;
+    font-size: 1.2rem;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    display: inline-block;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.start-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+    background: #f8f9fa;
+}
+
+.tip {
+    margin-top: 15px;
+    opacity: 0.8;
+    font-size: 0.9rem;
+}
+
 /* 滚动条样式 */
 ::-webkit-scrollbar {
     width: 4px;

@@ -4,459 +4,41 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>快点点 - 菜单</title>
+    <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
-            background-color: #f5f5f5;
-            color: #333;
-        }
-        
-        /* 头部样式 */
-        .header {
-            background: linear-gradient(135deg, #ff6b6b, #ff8e53);
-            color: white;
-            padding: 15px 20px;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1000;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        
-        .header-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        
-        .logo {
-            font-size: 24px;
-            font-weight: bold;
-        }
-        
-        .auth-section {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        
-        .cart-btn {
-            position: relative;
-            background: rgba(255,255,255,0.2);
-            border: none;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s;
-        }
-        
-        .cart-btn:hover {
-            background: rgba(255,255,255,0.3);
-        }
-        
-        .cart-count {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            background: #ff4757;
-            color: white;
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            font-size: 12px;
-            display: none;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        /* 主内容区域 */
-        .main-content {
-            max-width: 1200px;
-            margin: 80px auto 70px;
-            padding: 0 20px;
-        }
-        
-        /* 分类导航 */
-        .category-nav {
-            background: white;
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        
-        .category-title {
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 15px;
-            color: #333;
-        }
-        
-        .category-list {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-        
-        .category-btn {
-            padding: 8px 16px;
-            background: #f8f9fa;
-            border: 1px solid #e9ecef;
-            border-radius: 20px;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-size: 14px;
-        }
-        
-        .category-btn.active {
-            background: #ff6b6b;
-            color: white;
-            border-color: #ff6b6b;
-        }
-        
-        .category-btn:hover {
-            background: #e9ecef;
-        }
-        
-        /* 菜品列表 */
-        .dishes-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 20px;
-            margin-bottom: 20px;
-        }
-        
-        .dish-card {
-            background: white;
-            border-radius: 15px;
-            padding: 15px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            transition: transform 0.3s;
-            cursor: pointer;
-        }
-        
-        .dish-card:hover {
-            transform: translateY(-5px);
-        }
-        
-        .dish-image {
-            width: 100%;
-            height: 180px;
-            object-fit: cover;
-            border-radius: 10px;
-            margin-bottom: 10px;
-        }
-        
-        .dish-name {
-            font-size: 16px;
-            font-weight: bold;
-            margin-bottom: 5px;
-            color: #333;
-        }
-        
-        .dish-description {
-            font-size: 14px;
-            color: #666;
-            margin-bottom: 10px;
-            line-height: 1.4;
-        }
-        
-        .dish-info {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .dish-price {
-            font-size: 18px;
-            font-weight: bold;
-            color: #ff6b6b;
-        }
-        
-        .add-to-cart-btn {
-            background: #ff6b6b;
-            color: white;
-            border: none;
-            border-radius: 20px;
-            padding: 8px 16px;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-size: 14px;
-        }
-        
-        .add-to-cart-btn:hover {
-            background: #ff4757;
-            transform: scale(1.05);
-        }
-        
-        /* 底部结算按钮 */
-        .checkout-footer {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: white;
-            padding: 15px 20px;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-            z-index: 1000;
-        }
-        
-        .checkout-content {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .cart-total {
-            font-size: 18px;
-            font-weight: bold;
-            color: #333;
-        }
-        
-        .checkout-btn {
-            background: #ff6b6b;
-            color: white;
-            border: none;
-            border-radius: 25px;
-            padding: 12px 30px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .checkout-btn:hover {
-            background: #ff4757;
-            transform: scale(1.05);
-        }
-        
-        .checkout-btn:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-            transform: none;
-        }
-        
-        /* 加载状态 */
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: #666;
-        }
-        
-        /* 认证弹窗 */
-        .auth-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 2000;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .auth-content {
-            background: white;
-            border-radius: 15px;
-            padding: 30px;
-            width: 90%;
-            max-width: 400px;
-        }
-        
-        .auth-tabs {
-            display: flex;
-            margin-bottom: 20px;
-            border-bottom: 1px solid #e9ecef;
-        }
-        
-        .auth-tab {
-            flex: 1;
-            text-align: center;
-            padding: 10px;
-            cursor: pointer;
-            border-bottom: 3px solid transparent;
-        }
-        
-        .auth-tab.active {
-            border-bottom-color: #ff6b6b;
-            color: #ff6b6b;
-        }
-        
-        .auth-form {
-            display: none;
-        }
-        
-        .auth-form.active {
-            display: block;
-        }
-        
-        .form-group {
-            margin-bottom: 15px;
-        }
-        
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-            color: #333;
-        }
-        
-        .form-group input {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 14px;
-        }
-        
-        .auth-btn {
-            width: 100%;
-            padding: 12px;
-            background: #ff6b6b;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            margin-top: 10px;
-        }
-        
-        .auth-btn:hover {
-            background: #ff4757;
-        }
-        
-        /* 响应式设计 */
-        @media (max-width: 768px) {
-            .dishes-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .checkout-content {
-                flex-direction: column;
-                gap: 10px;
-            }
-            
-            .cart-total {
-                font-size: 16px;
-            }
-            
-            .checkout-btn {
-                width: 100%;
-            }
-        }
-    </style>
 </head>
 <body>
-    <!-- 头部 -->
-    <header class="header">
-        <div class="header-content">
-            <div class="logo">快点点</div>
-            <div class="auth-section">
-                <span data-auth="unauthenticated" id="loginBtn" style="cursor: pointer;">登录/注册</span>
-                <span data-auth="authenticated" id="userInfo">
-                    <span id="userEmail"></span>
-                    <button onclick="logout()" style="margin-left: 10px; background: none; border: 1px solid white; color: white; padding: 5px 10px; border-radius: 5px; cursor: pointer;">退出</button>
-                </span>
-                <button class="cart-btn" onclick="goToCart()">
-                    🛒
-                    <span class="cart-count">0</span>
-                </button>
-            </div>
-        </div>
-    </header>
+    <div class="container">
+        <!-- 头部 -->
+        <header class="header">
+            <button class="back-btn" onclick="window.location.href='index.html'">←</button>
+            <h1>菜单</h1>
+            <div class="cart-count" id="cartCount">0</div>
+        </header>
 
-    <!-- 主内容 -->
-    <main class="main-content">
-        <!-- 分类导航 -->
-        <section class="category-nav">
-            <h2 class="category-title">菜品分类</h2>
-            <div class="category-list" id="categoryList">
+        <!-- 主内容区域 -->
+        <main class="main-content">
+            <!-- 分类导航 -->
+            <nav class="category-nav">
                 <button class="category-btn active" data-category="all">全部</button>
                 <!-- 分类按钮将通过JavaScript动态生成 -->
-            </div>
-        </section>
+            </nav>
 
-        <!-- 菜品列表 -->
-        <section id="dishesSection">
-            <div class="loading">加载中...</div>
-            <div class="dishes-grid" id="dishesGrid" style="display: none;">
-                <!-- 菜品卡片将通过JavaScript动态生成 -->
-            </div>
-        </section>
-    </main>
+            <!-- 菜品列表 -->
+            <section id="dishesSection">
+                <div class="loading">加载中...</div>
+                <div class="dishes-grid" id="dishesGrid" style="display: none;">
+                    <!-- 菜品卡片将通过JavaScript动态生成 -->
+                </div>
+            </section>
+        </main>
 
-    <!-- 底部结算按钮 -->
-    <footer class="checkout-footer">
-        <div class="checkout-content">
-            <div class="cart-total">
-                总计: <span id="totalAmount">¥0.00</span>
-            </div>
+        <!-- 底部结算按钮 -->
+        <footer class="footer">
             <button class="checkout-btn" onclick="goToCart()" id="checkoutBtn" disabled>
                 去结算 (<span id="itemCount">0</span>)
             </button>
-        </div>
-    </footer>
-
-    <!-- 认证弹窗 -->
-    <div class="auth-modal" id="authModal">
-        <div class="auth-content">
-            <div class="auth-tabs">
-                <div class="auth-tab active" onclick="switchAuthTab('login')">登录</div>
-                <div class="auth-tab" onclick="switchAuthTab('register')">注册</div>
-            </div>
-            
-            <!-- 登录表单 -->
-            <div class="auth-form active" id="loginForm">
-                <div class="form-group">
-                    <label for="loginEmail">邮箱</label>
-                    <input type="email" id="loginEmail" placeholder="请输入邮箱">
-                </div>
-                <div class="form-group">
-                    <label for="loginPassword">密码</label>
-                    <input type="password" id="loginPassword" placeholder="请输入密码">
-                </div>
-                <button class="auth-btn" onclick="login()">登录</button>
-            </div>
-            
-            <!-- 注册表单 -->
-            <div class="auth-form" id="registerForm">
-                <div class="form-group">
-                    <label for="registerEmail">邮箱</label>
-                    <input type="email" id="registerEmail" placeholder="请输入邮箱">
-                </div>
-                <div class="form-group">
-                    <label for="registerPassword">密码</label>
-                    <input type="password" id="registerPassword" placeholder="请输入密码（至少6位）">
-                </div>
-                <div class="form-group">
-                    <label for="registerUsername">用户名（可选）</label>
-                    <input type="text" id="registerUsername" placeholder="请输入用户名">
-                </div>
-                <div class="form-group">
-                    <label for="registerPhone">手机号（可选）</label>
-                    <input type="tel" id="registerPhone" placeholder="请输入手机号">
-                </div>
-                <button class="auth-btn" onclick="register()">注册</button>
-            </div>
-        </div>
+        </footer>
     </div>
 
     <!-- 引入Supabase配置 -->
@@ -472,14 +54,6 @@
             await loadCategories();
             await loadDishes();
             updateCartUI();
-            
-            // 绑定认证弹窗事件
-            document.getElementById('loginBtn').addEventListener('click', showAuthModal);
-            document.getElementById('authModal').addEventListener('click', function(e) {
-                if (e.target === this) {
-                    hideAuthModal();
-                }
-            });
         });
         
         // 加载分类
@@ -499,12 +73,12 @@
         
         // 渲染分类
         function renderCategories() {
-            const categoryList = document.getElementById('categoryList');
+            const categoryNav = document.querySelector('.category-nav');
             
             // 清空除"全部"按钮外的其他按钮
-            const allBtn = categoryList.querySelector('[data-category="all"]');
-            categoryList.innerHTML = '';
-            categoryList.appendChild(allBtn);
+            const allBtn = categoryNav.querySelector('[data-category="all"]');
+            categoryNav.innerHTML = '';
+            categoryNav.appendChild(allBtn);
             
             // 添加分类按钮
             categories.forEach(category => {
@@ -513,7 +87,7 @@
                 btn.textContent = category.name;
                 btn.setAttribute('data-category', category.id);
                 btn.addEventListener('click', () => selectCategory(category.id));
-                categoryList.appendChild(btn);
+                categoryNav.appendChild(btn);
             });
         }
         
@@ -524,20 +98,24 @@
             // 更新按钮状态
             document.querySelectorAll('.category-btn').forEach(btn => {
                 btn.classList.remove('active');
+                if (btn.getAttribute('data-category') === categoryId) {
+                    btn.classList.add('active');
+                }
             });
-            document.querySelector(`[data-category="${categoryId}"]`).classList.add('active');
             
-            // 过滤并显示菜品
-            filterAndRenderDishes();
+            // 筛选菜品
+            filterDishes();
         }
         
         // 加载菜品
         async function loadDishes() {
             try {
-                const result = await window.kuaidiandianService.getDishesByCategory();
+                const result = await window.kuaidiandianService.getDishes();
                 if (result.success) {
                     dishes = result.data;
                     renderDishes();
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('dishesGrid').style.display = 'grid';
                 } else {
                     showError('加载菜品失败: ' + result.error);
                 }
@@ -546,13 +124,11 @@
             }
         }
         
-        // 过滤并渲染菜品
-        function filterAndRenderDishes() {
-            let filteredDishes = dishes;
-            
-            if (currentCategory !== 'all') {
-                filteredDishes = dishes.filter(dish => dish.category_id === parseInt(currentCategory));
-            }
+        // 筛选菜品
+        function filterDishes() {
+            const filteredDishes = currentCategory === 'all' 
+                ? dishes 
+                : dishes.filter(dish => dish.category_id === currentCategory);
             
             renderDishes(filteredDishes);
         }
@@ -560,173 +136,94 @@
         // 渲染菜品
         function renderDishes(dishesToRender = dishes) {
             const dishesGrid = document.getElementById('dishesGrid');
-            const loading = document.querySelector('.loading');
-            
-            if (dishesToRender.length === 0) {
-                dishesGrid.style.display = 'none';
-                loading.textContent = '暂无菜品';
-                loading.style.display = 'block';
-                return;
-            }
-            
-            loading.style.display = 'none';
-            dishesGrid.style.display = 'grid';
             dishesGrid.innerHTML = '';
             
             dishesToRender.forEach(dish => {
-                const card = document.createElement('div');
-                card.className = 'dish-card';
-                card.innerHTML = `
-                    <img src="${dish.image_url || '/images/default-dish.jpg'}" alt="${dish.name}" class="dish-image" onerror="this.src='/images/default-dish.jpg'">
-                    <div class="dish-name">${dish.name}</div>
-                    <div class="dish-description">${dish.description || '暂无描述'}</div>
-                    <div class="dish-info">
-                        <div class="dish-price">¥${dish.price}</div>
-                        <button class="add-to-cart-btn" onclick="addToCart('${dish.id}')">加入购物车</button>
-                    </div>
-                `;
-                dishesGrid.appendChild(card);
+                const dishCard = createDishCard(dish);
+                dishesGrid.appendChild(dishCard);
             });
         }
         
-        // 添加到购物车
-        async function addToCart(dishId) {
-            const dish = dishes.find(d => d.id === dishId);
-            if (!dish) return;
+        // 创建菜品卡片
+        function createDishCard(dish) {
+            const card = document.createElement('div');
+            card.className = 'dish-card';
             
-            const result = await window.kuaidiandianService.addToCart(dish);
-            if (result.success) {
-                showSuccess('已添加到购物车');
+            card.innerHTML = `
+                <div class="dish-image">
+                    <img src="${dish.image_url || 'https://via.placeholder.com/150x150?text=菜品图片'}" alt="${dish.name}" onerror="this.src='https://via.placeholder.com/150x150?text=菜品图片'">
+                </div>
+                <div class="dish-info">
+                    <h3 class="dish-name">${dish.name}</h3>
+                    <p class="dish-description">${dish.description || '暂无描述'}</p>
+                    <div class="dish-price">¥${dish.price}</div>
+                    <button class="add-to-cart-btn" onclick="addToCart('${dish.id}')">
+                        加入购物车
+                    </button>
+                </div>
+            `;
+            
+            return card;
+        }
+        
+        // 添加到购物车
+        function addToCart(dishId) {
+            const dish = dishes.find(d => d.id === dishId);
+            if (dish) {
+                window.kuaidiandianService.addToCart(dish);
                 updateCartUI();
-            } else {
-                showError('添加到购物车失败: ' + result.error);
+                
+                // 显示添加成功提示
+                showToast('已添加到购物车');
             }
         }
         
         // 更新购物车UI
         function updateCartUI() {
-            const itemCount = window.kuaidiandianService.getCartItemCount();
-            const totalAmount = window.kuaidiandianService.getCartTotal();
+            const cartCount = window.kuaidiandianService.getCartCount();
+            document.getElementById('cartCount').textContent = cartCount;
+            document.getElementById('itemCount').textContent = cartCount;
             
-            // 更新购物车数量
-            document.querySelectorAll('.cart-count').forEach(el => {
-                el.textContent = itemCount;
-                el.style.display = itemCount > 0 ? 'inline' : 'none';
-            });
-            
-            // 更新总计
-            document.getElementById('totalAmount').textContent = `¥${totalAmount.toFixed(2)}`;
-            document.getElementById('itemCount').textContent = itemCount;
-            
-            // 更新结算按钮状态
             const checkoutBtn = document.getElementById('checkoutBtn');
-            checkoutBtn.disabled = itemCount === 0;
+            if (cartCount > 0) {
+                checkoutBtn.disabled = false;
+            } else {
+                checkoutBtn.disabled = true;
+            }
         }
         
-        // 跳转到购物车页面
+        // 前往购物车
         function goToCart() {
-            if (window.kuaidiandianService.getCartItemCount() > 0) {
-                window.location.href = 'cart.html';
-            } else {
-                showError('购物车为空');
-            }
+            window.location.href = 'cart.html';
         }
         
-        // 认证相关功能
-        function showAuthModal() {
-            document.getElementById('authModal').style.display = 'flex';
-        }
-        
-        function hideAuthModal() {
-            document.getElementById('authModal').style.display = 'none';
-            clearAuthForms();
-        }
-        
-        function switchAuthTab(tab) {
-            document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
-            
-            if (tab === 'login') {
-                document.querySelector('[onclick="switchAuthTab(\'login\')"]').classList.add('active');
-                document.getElementById('loginForm').classList.add('active');
-            } else {
-                document.querySelector('[onclick="switchAuthTab(\'register\')"]').classList.add('active');
-                document.getElementById('registerForm').classList.add('active');
-            }
-        }
-        
-        function clearAuthForms() {
-            document.getElementById('loginEmail').value = '';
-            document.getElementById('loginPassword').value = '';
-            document.getElementById('registerEmail').value = '';
-            document.getElementById('registerPassword').value = '';
-            document.getElementById('registerUsername').value = '';
-            document.getElementById('registerPhone').value = '';
-        }
-        
-        async function login() {
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPassword').value;
-            
-            if (!email || !password) {
-                showError('请输入邮箱和密码');
-                return;
-            }
-            
-            const result = await window.kuaidiandianService.signIn(email, password);
-            if (result.success) {
-                showSuccess('登录成功');
-                hideAuthModal();
-                updateAuthUI();
-            } else {
-                showError('登录失败: ' + result.error);
-            }
-        }
-        
-        async function register() {
-            const email = document.getElementById('registerEmail').value;
-            const password = document.getElementById('registerPassword').value;
-            const username = document.getElementById('registerUsername').value;
-            const phone = document.getElementById('registerPhone').value;
-            
-            if (!email || !password) {
-                showError('请输入邮箱和密码');
-                return;
-            }
-            
-            if (password.length < 6) {
-                showError('密码至少6位');
-                return;
-            }
-            
-            const result = await window.kuaidiandianService.signUp(email, password, username, phone);
-            if (result.success) {
-                showSuccess('注册成功，请检查邮箱验证');
-                hideAuthModal();
-                switchAuthTab('login');
-            } else {
-                showError('注册失败: ' + result.error);
-            }
-        }
-        
-        async function logout() {
-            const result = await window.kuaidiandianService.signOut();
-            if (result.success) {
-                showSuccess('已退出登录');
-                updateAuthUI();
-            } else {
-                showError('退出失败: ' + result.error);
-            }
-        }
-        
-        // 简化版错误和成功提示
+        // 显示错误信息
         function showError(message) {
-            alert('❌ ' + message);
+            const dishesSection = document.getElementById('dishesSection');
+            dishesSection.innerHTML = `<div class="error">${message}</div>`;
         }
         
-        function showSuccess(message) {
-            alert('✅ ' + message);
+        // 显示提示信息
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.add('show');
+            }, 100);
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    document.body.removeChild(toast);
+                }, 300);
+            }, 2000);
         }
+        
+        // 初始化服务
+        window.kuaidiandianService = new KuaidiandianService();
     </script>
 </body>
 </html>
