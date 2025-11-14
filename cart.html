@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>购物车 - 快点点餐厅</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- 顶部导航 -->
+        <header class="header">
+            <button class="back-btn" onclick="window.location.href='menu.html'">
+                ← 返回菜单
+            </button>
+            <h1>购物车</h1>
+            <div class="cart-count" id="headerCartCount">0</div>
+        </header>
+
+        <!-- 购物车内容 -->
+        <main class="cart-main">
+            <!-- 购物车为空状态 -->
+            <div id="emptyCart" class="empty-cart">
+                <div class="empty-icon">🛒</div>
+                <h3>购物车为空</h3>
+                <p>快去菜单页面挑选美食吧！</p>
+                <button class="primary-btn" onclick="window.location.href='menu.html'">
+                    去点餐
+                </button>
+            </div>
+
+            <!-- 购物车商品列表 -->
+            <div id="cartItems" class="cart-items" style="display: none;">
+                <div class="cart-section">
+                    <h3>已选菜品</h3>
+                    <div id="cartItemsList" class="items-list">
+                        <!-- 购物车商品项将通过JS动态生成 -->
+                    </div>
+                </div>
+
+                <!-- 点餐类型选择 -->
+                <div class="cart-section">
+                    <h3>点餐类型</h3>
+                    <div class="order-type-selector">
+                        <label class="order-type-option">
+                            <input type="radio" name="orderType" value="dine_in" checked>
+                            <span class="radio-custom"></span>
+                            堂食
+                        </label>
+                        <label class="order-type-option">
+                            <input type="radio" name="orderType" value="takeaway">
+                            <span class="radio-custom"></span>
+                            外卖
+                        </label>
+                    </div>
+
+                    <!-- 堂食信息 -->
+                    <div id="dineInInfo" class="order-info">
+                        <label for="tableNo">桌号：</label>
+                        <input type="text" id="tableNo" placeholder="请输入桌号" required>
+                    </div>
+
+                    <!-- 外卖信息 -->
+                    <div id="takeawayInfo" class="order-info" style="display: none;">
+                        <label for="address">配送地址：</label>
+                        <textarea id="address" placeholder="请输入详细配送地址" required></textarea>
+                        <label for="phone">联系电话：</label>
+                        <input type="tel" id="phone" placeholder="请输入联系电话">
+                    </div>
+                </div>
+
+                <!-- 价格汇总 -->
+                <div class="cart-section">
+                    <div class="price-summary">
+                        <div class="price-row">
+                            <span>菜品金额：</span>
+                            <span id="subtotal">¥0.00</span>
+                        </div>
+                        <div class="price-row total">
+                            <span>合计：</span>
+                            <span id="totalAmount">¥0.00</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- 底部结算按钮 -->
+        <footer class="footer" id="cartFooter" style="display: none;">
+            <button class="submit-order-btn" onclick="submitOrder()">
+                提交订单
+            </button>
+        </footer>
+    </div>
+
+    <!-- 加载提示 -->
+    <div id="loading" class="loading" style="display: none;">
+        处理中...
+    </div>
+
+    <script src="supabase-config.js"></script>
+    <script>
+        // 购物车数据
+        let cartItems = [];
+
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCart();
+            setupOrderTypeChange();
+            updateCartDisplay();
+        });
+
+        // 加载购物车数据
+        function loadCart() {
+            const cartData = localStorage.getItem('kuai_dian_dian_cart');
+            if (cartData) {
+                cartItems = JSON.parse(cartData);
+                updateCartDisplay();
+            }
+        }
+
+        // 设置点餐类型变化监听
+        function setupOrderTypeChange() {
+            const radioButtons = document.querySelectorAll('input[name="orderType"]');
+            radioButtons.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    const isTakeaway = this.value === 'takeaway';
+                    document.getElementById('dineInInfo').style.display = isTakeaway ? 'none' : 'block';
+                    document.getElementById('takeawayInfo').style.display = isTakeaway ? 'block' : 'none';
+                });
+            });
+        }
+
+        // 更新购物车显示
+        function updateCartDisplay() {
+            const emptyCart = document.getElementById('emptyCart');
+            const cartItemsDiv = document.getElementById('cartItems');
+            const cartFooter = document.getElementById('cartFooter');
+            const headerCartCount = document.getElementById('headerCartCount');
+
+            if (cartItems.length === 0) {
+                emptyCart.style.display = 'block';
+                cartItemsDiv.style.display = 'none';
+                cartFooter.style.display = 'none';
+                headerCartCount.textContent = '0';
+            } else {
+                emptyCart.style.display = 'none';
+                cartItemsDiv.style.display = 'block';
+                cartFooter.style.display = 'flex';
+                headerCartCount.textContent = cartItems.length;
+                
+                renderCartItems();
+                calculateTotal();
+            }
+        }
+
+        // 渲染购物车商品列表
+        function renderCartItems() {
+            const cartItemsList = document.getElementById('cartItemsList');
+            cartItemsList.innerHTML = '';
+
+            cartItems.forEach((item, index) => {
+                const itemElement = document.createElement('div');
+                itemElement.className = 'cart-item';
+                itemElement.innerHTML = `
+                    <div class="item-info">
+                        <h4>${item.name}</h4>
+                        <p class="item-price">¥${item.price}</p>
+                    </div>
+                    <div class="item-controls">
+                        <button class="qty-btn" onclick="updateQuantity(${index}, -1)">-</button>
+                        <span class="item-qty">${item.quantity}</span>
+                        <button class="qty-btn" onclick="updateQuantity(${index}, 1)">+</button>
+                        <button class="delete-btn" onclick="removeItem(${index})">×</button>
+                    </div>
+                `;
+                cartItemsList.appendChild(itemElement);
+            });
+        }
+
+        // 更新商品数量
+        function updateQuantity(index, change) {
+            const newQuantity = cartItems[index].quantity + change;
+            if (newQuantity > 0) {
+                cartItems[index].quantity = newQuantity;
+                saveCart();
+                updateCartDisplay();
+            }
+        }
+
+        // 删除商品
+        function removeItem(index) {
+            cartItems.splice(index, 1);
+            saveCart();
+            updateCartDisplay();
+        }
+
+        // 保存购物车到本地存储
+        function saveCart() {
+            localStorage.setItem('kuai_dian_dian_cart', JSON.stringify(cartItems));
+        }
+
+        // 计算总价
+        function calculateTotal() {
+            const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            document.getElementById('subtotal').textContent = `¥${subtotal.toFixed(2)}`;
+            document.getElementById('totalAmount').textContent = `¥${subtotal.toFixed(2)}`;
+        }
+
+        // 提交订单
+        async function submitOrder() {
+            if (cartItems.length === 0) {
+                alert('购物车为空，请先添加商品');
+                return;
+            }
+
+            const orderType = document.querySelector('input[name="orderType"]:checked').value;
+            let tableNo = '';
+            let address = '';
+            let phone = '';
+
+            if (orderType === 'dine_in') {
+                tableNo = document.getElementById('tableNo').value.trim();
+                if (!tableNo) {
+                    alert('请输入桌号');
+                    return;
+                }
+            } else {
+                address = document.getElementById('address').value.trim();
+                phone = document.getElementById('phone').value.trim();
+                if (!address) {
+                    alert('请输入配送地址');
+                    return;
+                }
+            }
+
+            // 显示加载中
+            document.getElementById('loading').style.display = 'flex';
+
+            try {
+                // 生成订单号
+                const orderNo = 'ORD' + new Date().getTime() + Math.random().toString(36).substr(2, 5).toUpperCase();
+                
+                // 计算总金额
+                const totalAmount = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+                // 插入订单到数据库
+                const { data: orderData, error: orderError } = await supabase
+                    .from('orders')
+                    .insert([{
+                        order_no: orderNo,
+                        type: orderType,
+                        table_no: tableNo,
+                        address: address,
+                        phone: phone,
+                        total_amount: totalAmount,
+                        status: 'pending'
+                    }])
+                    .select();
+
+                if (orderError) throw orderError;
+
+                const orderId = orderData[0].id;
+
+                // 插入订单项
+                const orderItems = cartItems.map(item => ({
+                    order_id: orderId,
+                    dish_id: item.id,
+                    quantity: item.quantity,
+                    unit_price: item.price
+                }));
+
+                const { error: itemsError } = await supabase
+                    .from('order_items')
+                    .insert(orderItems);
+
+                if (itemsError) throw itemsError;
+
+                // 清空购物车
+                localStorage.removeItem('kuai_dian_dian_cart');
+                
+                // 跳转到订单确认页面
+                window.location.href = `order.html?order_no=${orderNo}`;
+
+            } catch (error) {
+                console.error('提交订单失败:', error);
+                alert('提交订单失败，请重试');
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,146 +1,153 @@
-# 美食餐厅系统
+# 快点点 - 餐厅自助点餐系统
 
-一个基于 Supabase 和 Netlify 的在线餐饮服务平台。
+## 项目简介
 
-## 项目概述
+"快点点"是一个基于 Supabase 的现代化餐厅自助点餐系统，为顾客提供流畅的点餐体验，支持堂食和外卖两种点餐方式。
 
-本项目是一个完整的餐饮系统网站，包含以下功能：
-- **餐厅展示**：展示合作餐厅信息
-- **菜品浏览**：在线浏览菜单和菜品详情
-- **在线点餐**：选择菜品生成订单
-- **订单管理**：订单状态跟踪和管理
+## 核心功能
+
+- **📱 菜单浏览** - 分类展示菜品，支持图片和详细描述
+- **🛒 智能购物车** - 实时计算总价，支持数量修改和删除
+- **🍔 多类型点餐** - 支持堂食（需填写桌号）和外卖（需填写地址）
+- **✅ 订单跟踪** - 实时查看订单状态和制作进度
+- **🎨 响应式设计** - 完美适配手机和桌面设备
 
 ## 技术栈
 
-- **前端**：HTML5 + CSS3 + JavaScript
-- **后端**：Supabase（数据库和API服务）
-- **部署**：Netlify
-- **版本控制**：Git
+- **前端**: HTML5 + CSS3 + JavaScript (ES6+)
+- **后端**: Supabase (PostgreSQL + 实时数据库)
+- **存储**: Supabase Storage (图片存储)
+- **认证**: Supabase Auth (用户认证)
 
 ## 项目结构
 
 ```
-superbase/
-├── index.html          # 首页
-├── order.html         # 点餐页面
-├── about.html         # 关于页面
-├── supabase-config.js # Supabase配置
-├── package.json       # 项目配置
-├── vite.config.js     # Vite配置
-├── database-design.md # 数据库设计文档
-└── README.md         # 项目说明
+快点点餐厅点餐系统/
+├── index.html          # 欢迎页面
+├── menu.html           # 菜单页面
+├── cart.html           # 购物车页面
+├── order.html          # 订单确认页面
+├── style.css           # 全局样式
+├── supabase-config.js  # Supabase 配置
+├── database-schema.sql # 数据库表结构
+└── README.md           # 项目说明
 ```
 
 ## 数据库设计
 
-系统包含3张核心数据表：
+系统包含 5 张核心数据表：
 
-### 1. restaurants 表（餐厅表）
-- id: 主键，唯一标识
-- name: 餐厅名称
-- description: 餐厅描述
-- address: 餐厅地址
-- phone: 联系电话
-- image_url: 餐厅图片
-- created_at: 创建时间
-- updated_at: 更新时间
+### 1. profiles (用户信息表)
+- `id` (uuid) - 主键，关联 auth.users
+- `username` (text) - 用户名
+- `phone` (text) - 手机号
+- `created_at` (timestamp) - 创建时间
 
-### 2. dishes 表（菜品表）
-- id: 主键，唯一标识
-- name: 菜品名称
-- description: 菜品描述
-- price: 价格
-- image_url: 菜品图片
-- category: 菜品分类
-- restaurant_id: 外键，关联餐厅表
-- available: 是否可用
-- created_at: 创建时间
-- updated_at: 更新时间
+### 2. categories (菜品分类表)
+- `id` (serial) - 主键，自增
+- `name` (text) - 分类名称
+- `sort` (int) - 排序权重
 
-### 3. orders 表（订单表）
-- id: 主键，唯一标识
-- customer_name: 客户姓名
-- customer_phone: 客户电话
-- total_amount: 总金额
-- status: 订单状态
-- items: JSON格式的订单详情
-- restaurant_id: 外键，关联餐厅表
-- created_at: 创建时间
-- updated_at: 更新时间
+### 3. dishes (菜品表)
+- `id` (uuid) - 主键
+- `name` (text) - 菜品名称
+- `category_id` (int) - 分类ID
+- `price` (decimal) - 价格
+- `image_url` (text) - 图片URL
+- `description` (text) - 描述
+- `status` (boolean) - 在售状态
 
-## 功能特性
+### 4. orders (订单表)
+- `id` (uuid) - 主键
+- `user_id` (uuid) - 用户ID
+- `order_no` (text) - 订单号
+- `type` (text) - 点餐类型 (dine_in/takeaway)
+- `table_no` (text) - 桌号
+- `address` (text) - 地址
+- `phone` (text) - 联系电话
+- `total_amount` (decimal) - 总金额
+- `status` (text) - 订单状态
+- `created_at` (timestamp) - 创建时间
 
-### 首页 (index.html)
-- 响应式设计，适配各种设备
-- 餐厅展示和介绍
-- 菜品推荐展示
-- 导航到点餐和关于页面
-
-### 点餐页面 (order.html)
-- 餐厅选择功能
-- 动态菜单加载
-- 菜品选择和数量控制
-- 订单汇总和价格计算
-- 客户信息填写
-
-### 关于页面 (about.html)
-- 项目详细介绍
-- 技术栈说明
-- 系统功能特性
-- 联系信息和作业说明
-
-## 部署说明
-
-### 本地开发
-1. 安装依赖：`npm install`
-2. 启动开发服务器：`npm run dev`
-3. 访问：http://localhost:3000
-
-### Netlify 部署
-1. 将项目推送到 GitHub 仓库
-2. 登录 Netlify，选择 GitHub 仓库
-3. 配置构建设置：
-   - 构建命令：`npm run build`
-   - 发布目录：`dist`
-4. 部署完成，获取访问链接
-
-### Supabase 配置
-1. 在 Supabase 创建新项目
-2. 根据 `database-design.md` 创建数据表
-3. 在 `supabase-config.js` 中配置项目 URL 和密钥
+### 5. order_items (订单项表)
+- `id` (uuid) - 主键
+- `order_id` (uuid) - 订单ID
+- `dish_id` (uuid) - 菜品ID
+- `quantity` (int) - 数量
+- `unit_price` (decimal) - 单价
 
 ## 使用说明
 
-1. **浏览餐厅**：在首页查看合作餐厅信息
-2. **选择菜品**：进入点餐页面，选择餐厅和菜品
-3. **下单**：填写客户信息，确认订单
-4. **订单跟踪**：系统会记录订单状态
+### 1. 开始点餐
+- 访问 `index.html` 进入欢迎页面
+- 点击"开始点餐"按钮进入菜单页面
 
-## 开发规范
+### 2. 浏览菜单
+- 在菜单页面浏览菜品分类
+- 点击分类标签筛选不同菜品
+- 查看菜品图片、名称、价格和描述
 
-- 代码遵循 Web 标准
-- 使用语义化 HTML 标签
-- CSS 采用现代布局技术（Flexbox、Grid）
-- JavaScript 使用 ES6+ 语法
-- 保持代码简洁和可维护性
+### 3. 添加购物车
+- 点击"加入购物车"按钮添加菜品
+- 支持数量调整（+/- 按钮）
+- 购物车图标显示当前商品数量
 
-## 作业要求
+### 4. 结算订单
+- 点击底部"去结算"按钮进入购物车
+- 选择点餐类型（堂食/外卖）
+- 填写必要信息（桌号/地址）
+- 确认订单总金额并提交
 
-- ✅ 使用 Supabase 和 Netlify
-- ✅ 至少 3 个独立页面
-- ✅ Supabase 中至少 3 张数据表
-- ✅ 网站定位明确（餐饮系统）
-- ✅ 提交 Netlify 部署链接
+### 5. 订单确认
+- 系统自动跳转到订单确认页面
+- 查看订单详细信息
+- 模拟支付流程
+- 跟踪订单状态
 
-## 截止时间
+## 安装和部署
 
-**2025年11月23日17:00**
+### 本地运行
+1. 克隆项目到本地
+2. 配置 Supabase 连接信息（修改 `supabase-config.js`）
+3. 在浏览器中打开 `index.html`
 
-## 作者信息
+### Supabase 配置
+1. 在 Supabase 控制台创建新项目
+2. 执行 `database-schema.sql` 创建表结构
+3. 配置环境变量：
+   ```javascript
+   const SUPABASE_URL = '你的 Supabase 项目 URL';
+   const SUPABASE_ANON_KEY = '你的 Supabase Anon Key';
+   ```
 
-项目开发者：学生作业项目
-联系方式：通过系统反馈
+## 特色功能
 
----
+### 响应式设计
+- 完美适配手机端和桌面端
+- 触摸友好的交互设计
+- 优化的加载性能
 
-*本项目为网站开发作业，旨在展示现代Web开发技术在实际项目中的应用。*
+### 实时数据同步
+- 基于 Supabase 实时订阅
+- 订单状态实时更新
+- 库存状态监控
+
+### 用户体验优化
+- 流畅的交互动画
+- 清晰的视觉反馈
+- 智能的错误处理
+
+## 浏览器支持
+
+- Chrome 60+
+- Firefox 55+
+- Safari 12+
+- Edge 79+
+
+## 许可证
+
+本项目仅供学习和演示使用。
+
+## 联系方式
+
+如有问题或建议，请联系技术支持团队。
